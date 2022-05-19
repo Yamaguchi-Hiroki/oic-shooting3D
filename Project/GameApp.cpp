@@ -10,13 +10,20 @@
 //INCLUDE
 #include	"GameApp.h"
 #include    "Player.h"
+#include     "stage.h"
 
 //カメラ
 CCamera		gCamera;
+
 //ライト
 CDirectionalLight	gLight;
+
 //プレイヤー
 CPlayer		gPlayer;
+
+//ステージ
+CStage		gStage;
+
 // デバッグ表示フラグ
 bool		gbDebug = false;
 
@@ -48,8 +55,14 @@ MofBool CGameApp::Initialize(void){
 	//プレイヤーの素材読み込み
 	gPlayer.Load();
 
+	//ステージの読み込み
+	gStage.Load();
+
 	//プレイヤーの状態初期化
 	gPlayer.Initialize();
+
+	//ステージの状態初期化
+	gStage.Initialize();
 	
 	return TRUE;
 }
@@ -63,6 +76,10 @@ MofBool CGameApp::Initialize(void){
 MofBool CGameApp::Update(void){
 	//キーの更新
 	g_pInput->RefreshKey();
+
+	//ステージの更新
+	gStage.Updaete();
+
 	//プレイヤーの更新
 	gPlayer.Update();
 	//デバッグ表示切り替え
@@ -78,6 +95,7 @@ MofBool CGameApp::Update(void){
 	CVector3 vup = CVector3(0, 1, 0);
 	cpos.x = posX;
 	tpos.x = posX;
+	vup.RotationZ(gPlayer.GetPosition().x / FIELD_HALF_X * MOF_ToRadian(10.0f));
 	gCamera.LookAt(cpos, tpos, vup);
 	gCamera.Update();
 	return TRUE;
@@ -98,10 +116,16 @@ MofBool CGameApp::Render(void){
 
 	g_pGraphics->SetDepthEnable(TRUE);
 
+	//ステージの描画
+	gStage.Render();
+
+	//プレイヤーの描画
 	gPlayer.Render();
 
+	// 3Dデバッグ描画
 	if (gbDebug)
 	{
+		//移動可能範囲の表示
 		CMatrix44 matWolrd;
 		matWolrd.Scaling(FIELD_HALF_X * 2, 1, FIELD_HALF_Z * 2);
 		CGraphicsUtilities::RenderPlane(matWolrd, Vector4(1, 1, 1, 0.4f));
@@ -109,8 +133,13 @@ MofBool CGameApp::Render(void){
 
 	g_pGraphics->SetDepthEnable(FALSE);
 
+	//2Dデバッグ描画
 	if (gbDebug)
 	{
+		// ステージのデバッグ文字描画
+		gStage.RenderDebugText();
+
+		//プレイヤーのデバッグ文字描画
 		gPlayer.RenderDebugText();
 	}
 
@@ -127,5 +156,6 @@ MofBool CGameApp::Render(void){
 *//**************************************************************************/
 MofBool CGameApp::Release(void){
 	gPlayer.Release();
+	gStage.Release();
 	return TRUE;
 }
