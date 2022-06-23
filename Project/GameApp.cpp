@@ -11,6 +11,7 @@
 #include	"GameApp.h"
 #include    "Player.h"
 #include     "stage.h"
+#include	"Stage1.h"
 
 //カメラ
 CCamera		gCamera;
@@ -20,6 +21,13 @@ CDirectionalLight	gLight;
 
 //プレイヤー
 CPlayer		gPlayer;
+
+#define		ENEMY_COUNT				(20)
+CEnemy		gEnemyArray[ENEMY_COUNT];
+
+#define ENEMYSHOT_COUNT				(200)
+CEnemyShot gShotArray[ENEMYSHOT_COUNT];
+CMeshContainer gEnemyShotMesh;
 
 //ステージ
 CStage		gStage;
@@ -58,12 +66,26 @@ MofBool CGameApp::Initialize(void){
 	//ステージの読み込み
 	gStage.Load();
 
+	if (!gEnemyShotMesh.Load("eShot.mom"))
+	{
+		return false;
+	}
 	//プレイヤーの状態初期化
 	gPlayer.Initialize();
 
 	//ステージの状態初期化
-	gStage.Initialize();
+	gStage.Initialize(&gStg1EnemyStart);
 	
+	for (int i = 0; i < ENEMY_COUNT; i++)
+	{
+		gEnemyArray[i].Initialize();
+	}
+
+	for (int i = 0; i < ENEMYSHOT_COUNT; i++)
+	{
+		gShotArray[i].Initialize();
+		gShotArray[i].SetMesh(&gEnemyShotMesh);
+	}
 	return TRUE;
 }
 /*************************************************************************//*!
@@ -78,16 +100,49 @@ MofBool CGameApp::Update(void){
 	g_pInput->RefreshKey();
 
 	//ステージの更新
-	gStage.Updaete();
-
+	gStage.Update(gEnemyArray,ENEMY_COUNT);
 	//プレイヤーの更新
 	gPlayer.Update();
+
+	for (int i = 0; i < ENEMY_COUNT; i++)
+	{
+		gEnemyArray[i].SetTargetPos(gPlayer.GetPosition());
+		gEnemyArray[i].Update(gShotArray, ENEMYSHOT_COUNT);
+	}
+
+	for (int i = 0; i < ENEMYSHOT_COUNT; i++)
+	{
+		gShotArray[i].Update();
+	}
+
+	for (int i = 0; i < ENEMY_COUNT; i++)
+	{
+		gPlayer.CollisionEnemy(gEnemyArray[i]);
+	}
+
+	for (int i = 0; i < ENEMYSHOT_COUNT; i++)
+	{
+		gPlayer.CollisionEnemyShot(gShotArray[i]);
+	}
+
 	//デバッグ表示切り替え
 	if (g_pInput->IsKeyPush(MOFKEY_F1))
 	{
 		gbDebug = ((gbDebug) ? false : true);
 	}
-
+	if (g_pInput->IsKeyPush(MOFKEY_RETURN) && gPlayer.IsDead())
+	{
+		gPlayer.Initialize();
+		gStage.Initialize(&gStg1EnemyStart);
+		for (int i = 0; i < ENEMY_COUNT; i++)
+		{
+			gEnemyArray[i].Initialize();
+		}
+		for (int i = 0; i < ENEMYSHOT_COUNT; i++)
+		{
+			gShotArray[i].Initialize();
+		}
+	}
 	//プレイヤーの動きに合わせてカメラを動かす
 	float posX = gPlayer.GetPosition().x * 0.4f;
 	CVector3 cpos = gCamera.GetViewPosition();
@@ -122,9 +177,30 @@ MofBool CGameApp::Render(void){
 	//プレイヤーの描画
 	gPlayer.Render();
 
+	for (int i = 0; i < ENEMY_COUNT; i++)
+	{
+		gEnemyArray[i].Render();
+	}
+
+	for (int i = 0; i < ENEMYSHOT_COUNT; i++)
+	{
+		gShotArray[i].Render();
+	}
 	// 3Dデバッグ描画
 	if (gbDebug)
 	{
+		gPlayer.RenderDebug();
+
+		for (int i = 0; i < ENEMY_COUNT; i++)
+		{
+			gEnemyArray[i].RenderDebug();
+		}
+
+		for (int i = 0; i < ENEMYSHOT_COUNT; i++)
+		{
+			gShotArray[i].RenderDebug();
+		}
+
 		//移動可能範囲の表示
 		CMatrix44 matWolrd;
 		matWolrd.Scaling(FIELD_HALF_X * 2, 1, FIELD_HALF_Z * 2);
@@ -141,8 +217,16 @@ MofBool CGameApp::Render(void){
 
 		//プレイヤーのデバッグ文字描画
 		gPlayer.RenderDebugText();
-	}
 
+		for (int i = 0; i < ENEMY_COUNT; i++)
+		{
+			gEnemyArray[i].RenderDebugText(i);
+		}
+	}
+	if (gPlayer.IsDead())
+	{
+		CGraphicsUtilities::RenderString(240, 350, MOF_COLOR_RED, "ゲームオーバー : Enterキーでもう一度最初から");
+	}
 	// 描画の終了
 	g_pGraphics->RenderEnd();
 	return TRUE;
@@ -157,5 +241,6 @@ MofBool CGameApp::Render(void){
 MofBool CGameApp::Release(void){
 	gPlayer.Release();
 	gStage.Release();
+	gEnemyShotMesh.Release();
 	return TRUE;
 }
