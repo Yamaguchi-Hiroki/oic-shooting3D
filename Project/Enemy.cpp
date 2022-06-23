@@ -2,15 +2,15 @@
 
 //敵の移動
 ANIM_DATA g_EnemyAnimPosY[2] = {
-	{1.0f,-10.0f,EASE_LINER},
+	{1.0f,-10.0f,EASE_LINEAR},
 	{3.0f,0.0f,EASE_INOUT_SINE},
 };
 ANIM_DATA g_EnemyAnimPosZ[5] = {
-	{0.0f,-FIELD_HALF_Z,EASE_LINER},
-	{1.0f,FIELD_HALF_Z - 10.0f,EASE_LINER},
+	{0.0f,-FIELD_HALF_Z,EASE_LINEAR},
+	{1.0f,FIELD_HALF_Z - 10.0f,EASE_LINEAR},
 	{2.0f,FIELD_HALF_Z ,EASE_OUT_SINE},
 	{3.0f,FIELD_HALF_Z - 10.0f,EASE_IN_SINE},
-	{5.0f,FIELD_HALF_Z ,EASE_LINER},
+	{5.0f,FIELD_HALF_Z ,EASE_LINEAR},
 };
 
 /**
@@ -51,7 +51,7 @@ void CEnemy::Initialize(){
  * 開始
  *
  */
-void CEnemy::Start(const Vector3& p){
+void CEnemy::Start(const Vector3& p,int t){
 	m_Pos = p;
 	m_Rot = Vector3(0, 0, 0);
 	m_bShow = true;
@@ -61,17 +61,42 @@ void CEnemy::Start(const Vector3& p){
 	m_TargetPos = Vector3(0, 0, 0);
 	m_AnimTime = 0;
 
+	m_Type = t;
+	switch (m_Type)
+	{
+	case 1:
+	case 2:
+	case 3:
+		m_HP = 100;
+		m_ShotWaitSet = 100;
+		m_ShotWait = m_ShotWaitSet;
+		break;
+	}
+
 }
 
 /**
  * 更新
  *
  */
-void CEnemy::Update(CEnemyShot* shot, int smax){
+void CEnemy::Update(CEnemyShot* shot, int smax) {
 	if (!GetShow())
 	{
 		return;
 	}
+	switch (m_Type)
+	{
+	case 0: UpdateType0(shot, smax);	break;
+	case 1:
+	case 2:
+	case 3: UpdateBossParts(shot, smax);	break;
+	}
+}
+/**
+* 更新
+* m_Typeが0の敵の更新関数
+*/
+void CEnemy::UpdateType0(CEnemyShot*shot,int smax){
 
 	m_AnimTime += CUtilities::GetFrameMSecond();
 
@@ -104,6 +129,48 @@ void CEnemy::Update(CEnemyShot* shot, int smax){
 	if (g_EnemyAnimPosZ[4].Time < m_AnimTime)
 	{
 		m_bShow = false;
+	}
+}
+/**
+* 更新
+* m_Typeが1,2,3の敵の更新関数
+*/
+void CEnemy::UpdateBossParts(CEnemyShot* shot, int smax) {
+	if (m_ShotWait <= 0)
+	{
+		m_ShotWait = m_ShotWaitSet;
+	}
+	else
+	{
+		m_ShotWait--;
+	}
+
+	if (m_ShotWait % 10 == 0 && m_ShotWait / 10 < 3)
+	{
+		int sCnt = m_Type - 1;
+		for (int cnt = -sCnt; cnt <= sCnt; cnt++)
+		{
+			CEnemyShot* newShot = CEnemyShot::FindAvailableShot(shot, smax);
+			if (!newShot)
+			{
+				continue;
+			}
+
+			Vector3 pos = m_Pos;
+			Vector3 direction = m_TargetPos - pos;
+
+			float distance = CVector3Utilities::Length(direction);
+
+			if (direction <= 0)
+			{
+				continue;
+			}
+
+			direction /= distance;
+			float ad = atan2(direction.z, direction.x) + cnt * MOF_ToRadian(10);
+			Vector3 vt(cos(ad), 0, sin(ad));
+			newShot->Fire(pos, vt * 0.2f);
+		}
 	}
 }
 

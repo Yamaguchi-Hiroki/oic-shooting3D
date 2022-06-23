@@ -16,7 +16,7 @@ class CStage {
 private:
 	CSprite3D		m_BG;
 	float			m_Scroll;
-	ENEMYSTART* m_pEnemyStart;
+	ENEMYSTART*     m_pEnemyStart;
 	CMeshContainer	m_EnemyMesh;
 	int				m_EnemyNo;
 public:
@@ -28,5 +28,6 @@ public:
 	void Render();
 	void RenderDebugText();
 	void Release();
+	bool IsAllEnemy() { return m_EnemyNo >= m_pEnemyStart->Count; }
 
 };

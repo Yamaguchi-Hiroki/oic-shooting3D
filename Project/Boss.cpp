@@ -99,6 +99,11 @@ void CBoss::Start(){
 	m_AnimTime = 0;
 
 	//各パーツの初期化
+	for (int i = 0; i < BOSS_PARTS_MAX; i++)
+	{
+		m_Parts[i].SetMesh(&m_PartsMesh);
+		m_Parts[i].Start(Vector3(0, 0, 0), 1 + i);
+	}
 }
 
 /**
@@ -110,6 +115,38 @@ void CBoss::Update(CEnemyShot* shot,int smax){
 	if(!GetShow())
 	{
 		return;
+	}
+
+	int partsCnt = GetPartsCount();
+	if (m_AnimTime < g_BossAnimPosY[1].Time)
+	{
+		m_AnimTime += CUtilities::GetFrameSecond();
+
+		m_Pos.y = InterpolationAnim(m_AnimTime, g_BossAnimPosY, 2);
+		m_Pos.z = InterpolationAnim(m_AnimTime, g_BossAnimPosZ, 2);
+		m_Rot.x = InterpolationAnim(m_AnimTime, g_BossAnimRotX, 2);
+		m_Rot.z = InterpolationAnim(m_AnimTime, g_BossAnimRotZ, 2);
+	}
+	else
+	{
+		RotateTarget();
+
+		m_Rot.z += (MOF_ToRadian((3 - partsCnt) * 120.0f) - m_Rot.z) * 0.05f;
+
+		if (partsCnt == 0)
+		{
+			m_Pos.y *= 0.95f;
+
+			ShotAllDirShot(shot, smax, 16);
+		}
+	}
+
+	m_matWorld.RotationZXY(m_Rot);
+	m_matWorld.SetTranslation(m_Pos);
+
+	for (int i = 0; i < BOSS_PARTS_MAX; i++)
+	{
+		UpdateParts(i, shot, smax, i == BOSS_PARTS_MAX - partsCnt);
 	}
 }
 
@@ -130,6 +167,11 @@ void CBoss::Damage(int dmg){
  *
  */
 void CBoss::RotateTarget(){
+
+	Vector3 direction = m_TargetPos - (m_Pos);
+	float dr = atan2(direction.x, direction.z) + MOF_MATH_PI;
+	float r = fmodf((dr - m_Rot.y) + MOF_MATH_PI, MOF_MATH_2PI);
+	m_Rot.y += ((0 < r) ? r - MOF_MATH_PI : r + MOF_MATH_PI) * 0.1f;
 }
 
 /**
@@ -137,6 +179,27 @@ void CBoss::RotateTarget(){
  *
  */
 void CBoss::ShotAllDirShot(CEnemyShot* shot, int smax, int sCnt){
+
+	if (m_ShotWait > 0)
+	{
+		m_ShotWait--;
+		return;
+	}
+
+	float ad = ((float)rand() / RAND_MAX) * 360.0f / sCnt;
+	for (int cnt = 0; cnt < sCnt; cnt++)
+	{
+		CEnemyShot* newShot = CEnemyShot::FindAvailableShot(shot, smax);
+		if (newShot)
+		{
+			m_ShotWait = 20;
+
+			float rad = MOF_ToRadian(ad);
+			Vector3 vt(cos(rad), 0, sin(rad));
+			newShot->Fire(m_Pos, vt * 0.2f);
+		}
+		ad += 360.0f / sCnt;
+	}
 }
 
 /**
@@ -144,13 +207,41 @@ void CBoss::ShotAllDirShot(CEnemyShot* shot, int smax, int sCnt){
  *
  */
 void CBoss::UpdateParts(int idx, CEnemyShot* shot, int smax, bool bShot){
+
+	CEnemy& parts = m_Parts[idx];
+	float angle = -(MOF_MATH_2PI * idx / BOSS_PARTS_MAX);
+
+	CVector3 p(0.0f, 3.5f, 0.0f);
+	p.RotationZ(angle);
+	p *= m_matWorld;
+	parts.SetPosition(p);
+
+	CVector3 r(m_Rot);
+	r.z += angle;
+	parts.SetRotation(r);
+
+	if (g_BossAnimPosY[1].Time <= m_AnimTime && bShot)
+	{
+		parts.SetTargetPos(m_TargetPos);
+		parts.Update(shot, smax);
+	}
 }
 
 /**
  * 描画
  *
  */
-void CBoss::Render(){
+void CBoss::Render() {
+	if (!GetShow())
+	{
+		return;
+	}
+
+	m_Mesh.Render(m_matWorld);
+
+	for (int i = 0; i < BOSS_PARTS_MAX; i++) {
+		m_Parts[i].Render();
+	}
 }
 
 /**
