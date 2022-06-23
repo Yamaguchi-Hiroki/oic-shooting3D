@@ -95,19 +95,13 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Enemy.cpp" />
-    <ClCompile Include="EnemyShot.cpp" />
     <ClCompile Include="GameApp.cpp" />
-    <ClCompile Include="GameDefine.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerShot.cpp" />
     <ClCompile Include="Stage.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Downloads\Stage1.h" />
-    <ClInclude Include="Enemy.h" />
-    <ClInclude Include="EnemyShot.h" />
     <ClInclude Include="GameApp.h" />
     <ClInclude Include="GameDefine.h" />
     <ClInclude Include="Player.h" />

@@ -1,51 +1,56 @@
 #include "PlayerShot.h"
 
 /**
- * コンストラクタ
- */
+* コンストラクタ
+*/
 CPlayerShot::CPlayerShot() :
-m_pMesh(NULL),
-m_Pos(0.0f,0.0f,0.0f),
-m_bShow(false){
+	m_pMesh(NULL),
+	m_pos(0.0f, 0.0f, 0.0f),
+	m_bShow(false) {
 }
 
 /**
- * デストラクタ
- */
-CPlayerShot::~CPlayerShot(){
+* デストラクタ
+*/
+CPlayerShot::~CPlayerShot() {
 }
 
 /**
- * 初期化
- */
-void CPlayerShot::Initialize(void){
+* 初期化
+*/
+void CPlayerShot::Initialize(void) {
+	m_pos = Vector3(0.0f, 0.0f, 0.0f);
+	m_bShow = true;
 }
 
-/**
- * 発射
- */
-void CPlayerShot::Fire(const Vector3& p){
-
+void CPlayerShot::Fire(const Vector3& p)
+{
+	m_pos = p;
+	m_bShow = true;
 }
 
-/**
- * 更新
- */
-void CPlayerShot::Update(void){
-
-}
-
-/**
- * 描画
- */
-void CPlayerShot::Render(void){
-
-}
-
-void CPlayerShot::RenderDebug(void) {
+void CPlayerShot::Update()
+{
 	if (!m_bShow)
 	{
 		return;
 	}
-	CGraphicsUtilities::RenderSphere(GetSphere(), Vector4(0, 1, 0, 0.3f));
+	m_pos.z += PLAYERSHOT_SPEED;
+	if (FIELD_HALF_Z < m_pos.z)
+	{
+		m_bShow = false;
+	}
+}
+
+/**
+* 描画
+*/
+void CPlayerShot::Render(void) {
+	if (!m_bShow)
+	{
+		return;
+	}
+	CMatrix44 wMat;
+	wMat.Translation(m_pos);
+	m_pMesh->Render(wMat);
 }
