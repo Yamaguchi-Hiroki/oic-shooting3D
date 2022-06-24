@@ -218,7 +218,7 @@ void CBoss::UpdateParts(int idx, CEnemyShot* shot, int smax, bool bShot){
 
 	CVector3 r(m_Rot);
 	r.z += angle;
-	parts.SetRotation(r);
+	parts.SetRotaition(r);
 
 	if (g_BossAnimPosY[1].Time <= m_AnimTime && bShot)
 	{

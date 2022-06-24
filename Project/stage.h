@@ -16,7 +16,7 @@ class CStage {
 private:
 	CSprite3D		m_BG;
 	float			m_Scroll;
-	ENEMYSTART* m_pEnemyStart;
+	ENEMYSTART*     m_pEnemyStart;
 	CMeshContainer	m_EnemyMesh;
 	int				m_EnemyNo;
 public:

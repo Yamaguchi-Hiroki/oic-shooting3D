@@ -2,15 +2,15 @@
 
 //“G‚ÌˆÚ“®
 ANIM_DATA g_EnemyAnimPosY[2] = {
-	{1.0f,-10.0f,EASE_LINER},
+	{1.0f,-10.0f,EASE_LINEAR},
 	{3.0f,0.0f,EASE_INOUT_SINE},
 };
 ANIM_DATA g_EnemyAnimPosZ[5] = {
-	{0.0f,-FIELD_HALF_Z,EASE_LINER},
-	{1.0f,FIELD_HALF_Z - 10.0f,EASE_LINER},
+	{0.0f,-FIELD_HALF_Z,EASE_LINEAR},
+	{1.0f,FIELD_HALF_Z - 10.0f,EASE_LINEAR},
 	{2.0f,FIELD_HALF_Z ,EASE_OUT_SINE},
 	{3.0f,FIELD_HALF_Z - 10.0f,EASE_IN_SINE},
-	{5.0f,FIELD_HALF_Z ,EASE_LINER},
+	{5.0f,FIELD_HALF_Z ,EASE_LINEAR},
 };
 
 /**
@@ -51,7 +51,7 @@ void CEnemy::Initialize(){
  * ŠJŽn
  *
  */
-void CEnemy::Start(const Vector3& p,int t = 0){
+void CEnemy::Start(const Vector3& p,int t ){
 	m_Pos = p;
 	m_Rot = Vector3(0, 0, 0);
 	m_bShow = true;
@@ -98,7 +98,7 @@ void CEnemy::Update(CEnemyShot* shot, int smax) {
 */
 void CEnemy::UpdateType0(CEnemyShot * shot, int smax){
 
-	m_AnimTime += CUtilities::GetFrameMSecond();
+	m_AnimTime += CUtilities::GetFrameSecond();
 
 	m_Pos.y = InterpolationAnim(m_AnimTime, g_EnemyAnimPosY, 2);
 	m_Pos.z = InterpolationAnim(m_AnimTime, g_EnemyAnimPosZ, 5);

@@ -28,7 +28,6 @@ CEnemy		gEnemyArray[ENEMY_COUNT];
 
 #define ENEMYSHOT_COUNT				(200)
 CEnemyShot gShotArray[ENEMYSHOT_COUNT];
-
 CMeshContainer gEnemyShotMesh;
 
 CBoss		gBoss;

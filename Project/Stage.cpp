@@ -67,7 +67,7 @@ void CStage::Update(CEnemy* ene,int ecnt) {
 				continue;
 			}
 			ene[i].SetMesh(&m_EnemyMesh);
-			ene[i].Start(Vector3(m_pEnemyStart->PosX[m_EnemyNo], 0, 0));
+			ene[i].Start(Vector3(m_pEnemyStart->PosX[m_EnemyNo], 0, 0),0);
 			break;
 		}
 		m_EnemyNo++;
