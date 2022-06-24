@@ -99,6 +99,11 @@ void CBoss::Start(){
 	m_AnimTime = 0;
 
 	//各パーツの初期化
+	for (int i = 0; i < BOSS_PARTS_MAX; i++)
+	{
+		m_Parts[i].SetMesh(&m_PartsMesh);
+		m_Parts[i].Start(Vector3(0, 0, 0), 1 + i);
+	}
 }
 
 /**

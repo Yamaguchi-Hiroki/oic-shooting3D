@@ -13,7 +13,8 @@ private:
 	int					m_HP;
 	int					m_ShotWait;
 	int					m_ShotWaitSet;
-	Vector3					m_TargetPos;
+	Vector3				m_TargetPos;
+	int					m_Type;
 
 public:
 	CEnemy();
@@ -29,4 +30,19 @@ public:
 	CSphere GetSphere() { return CSphere(m_Pos, 0.5f); }
 	void Damage(int dmg);
 	void SetTargetPos(const Vector3& t) { m_TargetPos = t; }
+	void UpdateType0(CEnemyShot* shot, int smax);
+	void UpdateBossParts(CEnemyShot* shot, int smax);
+	void SetPosition(const Vector3& p) { m_Pos = p; }
+	void SetRotaition(const Vector3& r) { m_Rot = r; }
+	void Start(const Vector3& p, int t = 0);
+	CSphere GetSphere() {
+		switch(m_Type)
+		{
+		case 1:
+		case 2:
+		case 3:
+			return CSphere(m_Pos, 1.5f);
+		}
+		return CSphere(m_Pos, 0.5f);
+	}
 };
