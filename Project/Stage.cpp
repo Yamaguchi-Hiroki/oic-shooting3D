@@ -54,7 +54,8 @@ void CStage::Initialize(ENEMYSTART*pSt) {
 /**
 * çXêV
 * 
-*/void CStage::Update(CEnemy* ene,int ecnt) {
+*/
+void CStage::Update(CEnemy* ene,int ecnt) {
 	m_Scroll += SCROLL_SPEED;
 
 	if (m_EnemyNo < m_pEnemyStart->Count && m_Scroll >= m_pEnemyStart->Scroll[m_EnemyNo])

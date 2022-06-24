@@ -105,6 +105,7 @@ void CPlayer::Update(void){
 				{
 					if (m_ShotArry[i].GetShow()) { continue; }
 					CVector3 ShotPos(0.4f * (cnt * 2  - 1), 0, 0);
+					ShotPos.RotationZ(m_RotZ);
 					ShotPos += m_Pos;
 					m_ShotWait = PLAYERSHOT_WAIT;
 					m_ShotArry[i].Fire(ShotPos);
@@ -198,6 +199,42 @@ void CPlayer::CollisionEnemyShot(CEnemyShot& shot) {
 	{
 		m_bDead = true;
 		shot.SetShow(false);
+	}
+}
+
+/**
+* ìñÇΩÇËîªíË
+* à¯êîÇÃÉ{ÉXÇ…ëŒÇµÇƒÇÃìñÇΩÇËîªíË
+*/
+void CPlayer::CollisionBoss(CBoss& boss) {
+	if (!boss.GetShow())
+	{
+		return;
+	}
+	CSphere ps = GetSphere();
+	CSphere bs = boss.GetSphere();
+	if (ps.CollisionSphere(bs))
+	{
+		m_bDead = true;
+	}
+
+	for (int i = 0; i < PLAYERSHOT_COUNT; i++)
+	{
+		if (!m_ShotArry[i].GetShow())
+		{
+			continue;
+		}
+		CSphere ss = m_ShotArry[i].GetSphere();
+		if (ss.CollisionSphere(bs))
+		{
+			boss.Damage(1);
+			m_ShotArry[i].SetShow(false);
+			break;
+		}
+	}
+	for (int i = 0; i < BOSS_PARTS_MAX; i++)
+	{
+		CollisionEnemy(boss.GetParts(i));
 	}
 }
 
